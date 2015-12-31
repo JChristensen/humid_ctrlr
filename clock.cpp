@@ -1,15 +1,14 @@
 #include "clock.h"
-const int _SYNC_MINUTE(58);               //the minute in which the hourly time sync is done
-const time_t _SYNC_INTERVAL(60*60);       //normal time sync interval
-const time_t _SYNC_RETRY_INTERVAL(5*60);  //interval to retry time sync if not received
+#include "xbee.h"
 TimeChangeRule _EDT = { "EDT", Second, Sun, Mar, 2, -240 }; //Daylight time = UTC - 4 hours
 TimeChangeRule _EST = { "EST", First, Sun, Nov, 2, -300 };  //Standard time = UTC - 5 hours
 Timezone _myTZ(_EDT, _EST);
 TimeChangeRule *_tcr;                     //pointer to the time change rule, use to get TZ abbrev
 
-clock::clock()
+//give the clock object the address of the xb object.
+void clock::begin(xb *XB)
 {
-    //_XB = &XB;
+    _XB = XB;
 }
 
 time_t clock::utc(void)
@@ -41,7 +40,7 @@ void clock::processTimeSync(time_t t)
         tmElements_t tm;
         breakTime(t, tm);
         tm.Minute = _SYNC_MINUTE;
-//        tm.Second = _XB -> txSec;
+        tm.Second = _XB -> txSec;
         _nextTimeSync = makeTime(tm);
         if ( _nextTimeSync <= t ) _nextTimeSync += _SYNC_INTERVAL;
     }

@@ -1,11 +1,16 @@
 #include "xbee.h"
-
-const uint32_t LATE_DATA_MS(31000);                     //data considered stale if not received for this long
-const uint32_t XB_ACK_TIMEOUT(3000);                    //ms
+#include "clock.h"
 
 xb::xb()
 {
     _stale = true;
+}
+
+//initialize the XBee and give it the address of the clock object.
+bool xb::begin(Stream &serial, clock *Clock, bool resetXBee)
+{
+    _Clock = Clock;
+    gsXBee::begin(serial, resetXBee);
 }
 
 //returns true when data received
@@ -33,6 +38,17 @@ bool xb::run(void)
     switch ( _xbeeState )
     {
     case xb_WAIT:
+        if ( _Clock->lastTimeSync() > 0 )   //wait for setup to do the first sync
+        {
+            if ( _Clock->utc() >= _Clock->_nextTimeSync +  _Clock->_timeSyncRetry ) _xbeeState = xb_REQ_TIMESYNC;
+        }
+        break;
+        
+    case xb_REQ_TIMESYNC:
+        _Clock->_timeSyncRetry += _SYNC_RETRY_INTERVAL;
+        //xb.destAddr = coordinator;
+        requestTimeSync(_Clock->utc());
+        _xbeeState = xb_WAIT_ACK;
         break;
 
     case xb_WAIT_ACK:

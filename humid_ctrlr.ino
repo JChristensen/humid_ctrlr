@@ -95,7 +95,7 @@ void setup(void)
             delay(1000);
             LCD.clear();
             LCD << F("XBee init");
-            if ( !XB.begin(Serial) )
+            if ( !XB.begin(Serial, &Clock) )
             {
                 XB.mcuReset(RESET_DELAY);    //reset if XBee initialization fails
                 //    if ( !XB.begin(Serial) ) circuitTest();
@@ -103,6 +103,7 @@ void setup(void)
             else
             {
                 INIT_STATE = REQ_TIMESYNC;
+                Clock.begin(&XB);
                 XB.setSyncCallback(clockSync);
             }
             break;
@@ -120,8 +121,7 @@ void setup(void)
             {
                 INIT_STATE = INIT_COMPLETE;
                 Serial << millis() << F("\tTime sync\t");
-                Clock.printDateTime();
-                Serial << endl;
+                Clock.printDate(Clock.utc()); Clock.printTime(Clock.utc()); Serial << F("UTC\n");
                 LCD.clear();
                 Humidifier.begin();
                 hbLED.begin();
