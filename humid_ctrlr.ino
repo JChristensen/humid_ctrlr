@@ -64,16 +64,14 @@ void circuitTest()
     }
 }
 
-enum INIT_STATES_t { 
+enum INIT_STATES_t {
     INIT_HARDWARE, REQ_TIMESYNC, WAIT_TIMESYNC, INIT_COMPLETE };
 
 void setup(void)
 {
     //special LCD characters
-    uint8_t upArrow[8] = { 
-        B00100, B01110, B10101, B00100, B00100, B00100, B00100             };
-    uint8_t dnArrow[8] = { 
-        B00100, B00100, B00100, B00100, B10101, B01110, B00100             };
+    uint8_t upArrow[8] = { B00100, B01110, B10101, B00100, B00100, B00100, B00100 };
+    uint8_t dnArrow[8] = { B00100, B00100, B00100, B00100, B10101, B01110, B00100 };
 
     INIT_STATES_t INIT_STATE = INIT_HARDWARE;
 
@@ -83,19 +81,19 @@ void setup(void)
         {
         case INIT_HARDWARE:
             Serial.begin(115200);
-            Serial << F( "\n" __FILE__ " " __DATE__ " " __TIME__ "\n" );
+            Serial << endl << millis() << F( "\t" __FILE__ " " __DATE__ " " __TIME__ "\n" );
             LCD.begin(16, 2);
             LCD.createChar(0, upArrow);
             LCD.createChar(1, dnArrow);
-            LCD.clear(); 
+            LCD.clear();
             LCD << F(__FILE__);
             delay(1000);
-            LCD.clear(); 
-            LCD << F(__DATE__); 
-            LCD.setCursor(0, 1); 
+            LCD.clear();
+            LCD << F(__DATE__);
+            LCD.setCursor(0, 1);
             LCD << F(__TIME__);
             delay(1000);
-            LCD.clear(); 
+            LCD.clear();
             LCD << F("XBee init");
             if ( !XB.begin(Serial) )
             {
@@ -105,13 +103,13 @@ void setup(void)
             else
             {
                 INIT_STATE = REQ_TIMESYNC;
-                XB.setSyncCallback(Clock.processTimeSync);
+                XB.setSyncCallback(clockSync);
             }
             break;
 
         case REQ_TIMESYNC:
             INIT_STATE = WAIT_TIMESYNC;
-            LCD.clear(); 
+            LCD.clear();
             LCD << F("Time sync");
             XB.requestTimeSync(Clock.utc());
             break;
@@ -121,8 +119,9 @@ void setup(void)
             if ( Clock.lastTimeSync() > 0 )
             {
                 INIT_STATE = INIT_COMPLETE;
-                Serial << millis() << F(" Time sync ");
-                Clock.printDateTime(); Serial << endl;
+                Serial << millis() << F("\tTime sync\t");
+                Clock.printDateTime();
+                Serial << endl;
                 LCD.clear();
                 Humidifier.begin();
                 hbLED.begin();
@@ -149,15 +148,16 @@ void loop(void)
     if ( haveData || stale != lastStale )
     {
         hState = Humidifier.run(t, stale);
-        Serial << millis() << '\t'; Clock.printDateTime();
+        Serial << millis() << '\t';
+        Clock.printDateTime();
         Serial << '\t' << t << '\t' << stale << '\t' << hState << endl;
     }
 
     //update the display if new data, stale attribute changed, or humidifier state changed
     if ( haveData || stale != lastStale || hState != last_hState )
     {
-        LCD.clear(); 
-        LCD << F("Humidifier "); 
+        LCD.clear();
+        LCD << F("Humidifier ");
         LCD.setCursor(11, 0);
         if ( hState == H_ON_INCR || hState == H_ON_DECR )
             LCD << F("ON ");
@@ -182,4 +182,7 @@ void loop(void)
     last_hState = hState;
 }
 
-
+void clockSync(time_t t)
+{
+    Clock.processTimeSync(t);
+}
