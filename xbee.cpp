@@ -47,7 +47,7 @@ bool xb::run(void)
             if ( now() >= _nextTimeSync + _timeSyncRetry ) _xbeeState = xb_REQ_TIMESYNC;
         }
         break;
-        
+
     case xb_REQ_TIMESYNC:
         _timeSyncRetry += _SYNC_RETRY_INTERVAL;
         //xb.destAddr = coordinator;
@@ -78,7 +78,7 @@ bool xb::run(void)
 void xb::processTimeSync(time_t t)
 {
     static bool first(true);
-    
+
     setTime(t);
     _lastTimeSyncRecd = t;
     _timeSyncRetry = 0;

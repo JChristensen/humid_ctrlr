@@ -75,7 +75,12 @@ enum INIT_STATES_t {
 
 void setup(void)
 {
+    //special LCD characters
+    uint8_t upArrow[8] = { B00100, B01110, B10101, B00100, B00100, B00100, B00100 };
+    uint8_t dnArrow[8] = { B00100, B00100, B00100, B00100, B10101, B01110, B00100 };
+
     INIT_STATES_t INIT_STATE = INIT_HARDWARE;
+    const uint32_t SYNC_TIMEOUT(10000);         //wait 10 sec for time sync response, then retry
 
     while ( INIT_STATE != INIT_COMPLETE )
     {
@@ -83,10 +88,13 @@ void setup(void)
         {
         case INIT_HARDWARE:
             //enable pullups on unused pins for noise immunity
-            for (uint8_t i = 0; i < sizeof(UNUSED_PINS) / sizeof(UNUSED_PINS[0]); i++) pinMode(i, INPUT_PULLUP);
+            for (uint8_t i = 0; i < sizeof(UNUSED_PINS) / sizeof(UNUSED_PINS[0]); i++)
+                pinMode(UNUSED_PINS[i], INPUT_PULLUP);
             Serial.begin(115200);
             Serial << endl << millis() << F( "\t" __FILE__ " " __DATE__ " " __TIME__ "\n" );
             LCD.begin(16, 2);
+            LCD.createChar(0, upArrow);
+            LCD.createChar(1, dnArrow);
             LCD.clear();
             LCD << F(__FILE__);
             delay(1000);
@@ -127,6 +135,10 @@ void setup(void)
                 Humidifier.begin();
                 hbLED.begin();
             }
+            else if ( millis() - XB.msTX > SYNC_TIMEOUT )
+            {
+                INIT_STATE = REQ_TIMESYNC;
+            }
             break;
 
         case INIT_COMPLETE:
@@ -154,7 +166,7 @@ void loop(void)
         LCD.clear();
         LCD << F("Humidifier ");
         LCD.setCursor(11, 0);
-        if ( hState == H_ON )
+        if ( hState == H_ON_INCR || hState == H_ON_DECR )
             LCD << F("ON ");
         else
             LCD << F("OFF");
@@ -163,6 +175,12 @@ void loop(void)
         LCD << t / 10 << '.' << t % 10 << '\xDF' << F("F ");
         if ( hState == H_STALE || hState == H_IDLE )
             LCD << '?';
+        else if ( hState == H_OFF )
+            LCD << ' ';
+        else if ( hState == H_ON_INCR )
+            LCD << '\x00';
+        else if ( hState == H_ON_DECR || H_OFF_DECR )
+            LCD << '\x01';
         LCD << F("  ");
 
         //print to Serial too

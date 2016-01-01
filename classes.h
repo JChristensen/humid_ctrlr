@@ -1,11 +1,12 @@
 //Humidifier controller class.
-//run() should be called for each temperature reading, or if data stale attribute changes.
+//run() should be called at least for each temperature reading, or if data stale attribute changes.
 
 //controller set point F * 10
-const int T_ON(800);         //turn on when plenum temperature exceeds this level, off when below
+const int T_LOW(800);         //turn on when plenum temperature exceeds this level
+const int T_HIGH(950);        //turn off when falling through this temperature, but always on above this temperature
 
 //enumerations
-enum ctrlrStates_t { H_STALE, H_IDLE, H_OFF, H_ON };
+enum ctrlrStates_t { H_STALE, H_IDLE, H_OFF, H_ON_INCR, H_ON_DECR, H_OFF_DECR };
 
 class HumidifierController
 {
@@ -21,6 +22,7 @@ private:
     uint8_t _relayPin;
     uint8_t _relayLedPin;   //LED pin turns on and off with relay
     uint8_t _staleLedPin;   //LED to indicate stale data
+    int _prevTemperature;   //temperature on last pass through
     uint32_t _msOn;         //time the humidifier was turned on (set to zero when humidifier off)
     uint32_t _msTotalOn;    //total on time for the humidifier
     uint16_t _onCount;      //number of times the humidifier was turned on
@@ -62,9 +64,9 @@ ctrlrStates_t HumidifierController::run(int temperature, bool dataStale)
         {
             _CTL_STATE = H_STALE;
         }
-        else if ( temperature >= T_ON )
+        else if ( temperature >= T_LOW )
         {
-            _CTL_STATE = H_ON;
+            _CTL_STATE = H_ON_INCR;
             _msOn = millis();
             ++_onCount;
             digitalWrite(_relayPin, HIGH);
@@ -72,21 +74,48 @@ ctrlrStates_t HumidifierController::run(int temperature, bool dataStale)
         }
         break;
 
-    case H_ON:     //humidifier on, temperature increasing
+    case H_ON_INCR:     //humidifier on, temperature increasing
         if ( dataStale )
         {
             _CTL_STATE = H_STALE;
         }
-        else if ( temperature <= T_ON )
+        else if ( temperature < _prevTemperature)
         {
-            _CTL_STATE = H_OFF;
+            _CTL_STATE = H_ON_DECR;
+        }
+        break;
+
+    case H_ON_DECR:     //humidifier on, temperature decreasing
+        if ( dataStale )
+        {
+            _CTL_STATE = H_STALE;
+        }
+        if ( temperature <= T_HIGH )
+        {
+            _CTL_STATE = H_OFF_DECR;
             _msTotalOn += millis() - _msOn;
             _msOn = 0;
             digitalWrite(_relayPin, LOW);
             digitalWrite(_relayLedPin, LOW);
         }
         break;
+
+    case H_OFF_DECR:    //humidifier off, cooling back down to T_LOW
+        if ( dataStale )
+        {
+            _CTL_STATE = H_STALE;
+        }
+        else if ( temperature <= T_LOW )
+        {
+            _CTL_STATE = H_OFF;
+        }
+        else if ( temperature > _prevTemperature )
+        {
+            _CTL_STATE = H_ON_INCR;
+        }
+        break;
     }
+    _prevTemperature = temperature;
     return _CTL_STATE;
 }
 

@@ -35,20 +35,20 @@ public:
     void printDate(time_t t);
     void printTime(time_t t);
     void printI00(int val, char delim);
-    
+
 private:
     xbeeStates_t _xbeeState;
     int _tF10;                  //plenum temperature, F * 10
     uint32_t _msLastData;       //last time data was received
     bool _stale;                //false if data is current
-    
+
     time_t _utc;                //current utc time
     time_t _local;              //current local time
     time_t _utcStart;           //sketch start time (actually the first time sync received)
     time_t _lastTimeSyncRecd;   //last time sync received
     time_t _nextTimeSync;       //time for next time sync
     time_t _timeSyncRetry;      //used for retries
-    
+
 };
 
 #endif
