@@ -9,7 +9,6 @@
 #include <Wire.h>
 #include <XBee.h>                      //http://code.google.com/p/xbee-arduino/
 #include "classes.h"
-#include "clock.h"
 #include "xbee.h"
 
 //pin assignments
@@ -24,7 +23,6 @@ const uint32_t RESET_DELAY(10000);
 //object instantiations
 HumidifierController Humidifier(RELAY, HUMID_ON_LED, DATA_STALE_LED);
 xb XB;
-clock Clock;
 LiquidTWI LCD(0); //i2c address 0 (0x20)
 heartbeat hbLED(HB_LED, 1000);
 
@@ -95,7 +93,7 @@ void setup(void)
             delay(1000);
             LCD.clear();
             LCD << F("XBee init");
-            if ( !XB.begin(Serial, &Clock) )
+            if ( !XB.begin(Serial) )
             {
                 XB.mcuReset(RESET_DELAY);    //reset if XBee initialization fails
                 //    if ( !XB.begin(Serial) ) circuitTest();
@@ -103,7 +101,6 @@ void setup(void)
             else
             {
                 INIT_STATE = REQ_TIMESYNC;
-                Clock.begin(&XB);
                 XB.setSyncCallback(clockSync);
             }
             break;
@@ -112,16 +109,16 @@ void setup(void)
             INIT_STATE = WAIT_TIMESYNC;
             LCD.clear();
             LCD << F("Time sync");
-            XB.requestTimeSync(Clock.utc());
+            XB.requestTimeSync(now());
             break;
 
         case WAIT_TIMESYNC:
             XB.run();
-            if ( Clock.lastTimeSync() > 0 )
+            if ( XB.lastTimeSync() > 0 )
             {
                 INIT_STATE = INIT_COMPLETE;
                 Serial << millis() << F("\tTime sync\t");
-                Clock.printDate(Clock.utc()); Clock.printTime(Clock.utc()); Serial << F("UTC\n");
+                XB.printDateTime(LOCAL); Serial << endl;
                 LCD.clear();
                 Humidifier.begin();
                 hbLED.begin();
@@ -149,7 +146,7 @@ void loop(void)
     {
         hState = Humidifier.run(t, stale);
         Serial << millis() << '\t';
-        Clock.printDateTime();
+        XB.printDateTime(LOCAL);
         Serial << '\t' << t << '\t' << stale << '\t' << hState << endl;
     }
 
@@ -184,5 +181,5 @@ void loop(void)
 
 void clockSync(time_t t)
 {
-    Clock.processTimeSync(t);
+    XB.processTimeSync(t);
 }
