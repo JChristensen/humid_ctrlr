@@ -1,3 +1,8 @@
+//Humidifier controller
+//Jack Christensen Dec-2015
+//Supplies power to humidifier when furnace is running by sensing
+//temperature in the plenum.
+
 #include <LiquidTWI.h>                 //http://forums.adafruit.com/viewtopic.php?t=21586
 // or http://dl.dropboxusercontent.com/u/35284720/postfiles/LiquidTWI-1.5.1.zip
 #include <gsXBee.h>                    //http://github.com/JChristensen/gsXBee
@@ -9,11 +14,16 @@
 #include "classes.h"
 #include "xbee.h"
 
-//pin assignments
-const uint8_t RELAY(7);
-const uint8_t HB_LED(11);               //heartbeat
-const uint8_t HUMID_ON_LED(12);         //humidifier on
-const uint8_t DATA_STALE_LED(13);
+const uint8_t               //pin assignments
+//  RXD(0),
+//  TXD(1),
+    RELAY(7),
+    HB_LED(11),             //heartbeat
+    HUMID_ON_LED(12),       //humidifier on indicator
+    DATA_STALE_LED(13),
+//  SDA(A4),
+//  SCL(A5),
+    UNUSED_PINS[] = { 2, 3, 4, 5, 6, 8, 9, 10, A0, A1, A2, A3 };
 
 //other constants
 const uint32_t RESET_DELAY(10000);
@@ -65,10 +75,6 @@ enum INIT_STATES_t {
 
 void setup(void)
 {
-    //special LCD characters
-    uint8_t upArrow[8] = { B00100, B01110, B10101, B00100, B00100, B00100, B00100 };
-    uint8_t dnArrow[8] = { B00100, B00100, B00100, B00100, B10101, B01110, B00100 };
-
     INIT_STATES_t INIT_STATE = INIT_HARDWARE;
 
     while ( INIT_STATE != INIT_COMPLETE )
@@ -76,11 +82,11 @@ void setup(void)
         switch (INIT_STATE)
         {
         case INIT_HARDWARE:
+            //enable pullups on unused pins for noise immunity
+            for (uint8_t i = 0; i < sizeof(UNUSED_PINS) / sizeof(UNUSED_PINS[0]); i++) pinMode(i, INPUT_PULLUP);
             Serial.begin(115200);
             Serial << endl << millis() << F( "\t" __FILE__ " " __DATE__ " " __TIME__ "\n" );
             LCD.begin(16, 2);
-            LCD.createChar(0, upArrow);
-            LCD.createChar(1, dnArrow);
             LCD.clear();
             LCD << F(__FILE__);
             delay(1000);
