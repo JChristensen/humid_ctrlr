@@ -1,5 +1,3 @@
-//Issue: Humidifier doesn't turn off until one sample after falling below tOFF.
-
 #include <LiquidTWI.h>                 //http://forums.adafruit.com/viewtopic.php?t=21586
 // or http://dl.dropboxusercontent.com/u/35284720/postfiles/LiquidTWI-1.5.1.zip
 #include <gsXBee.h>                    //http://github.com/JChristensen/gsXBee
@@ -141,14 +139,8 @@ void loop(void)
     static ctrlrStates_t hState;                            //humidifier state
     static ctrlrStates_t last_hState = (ctrlrStates_t)99;   //prev state (initialize to force update first time)
 
-    //run the humidifier state machine if new data received or if the stale attribute has changed
-    if ( haveData || stale != lastStale )
-    {
-        hState = Humidifier.run(t, stale);
-        Serial << millis() << '\t';
-        XB.printDateTime(LOCAL);
-        Serial << '\t' << t << '\t' << stale << '\t' << hState << endl;
-    }
+    //run the humidifier state machine
+    hState = Humidifier.run(t, stale);
 
     //update the display if new data, stale attribute changed, or humidifier state changed
     if ( haveData || stale != lastStale || hState != last_hState )
@@ -156,7 +148,7 @@ void loop(void)
         LCD.clear();
         LCD << F("Humidifier ");
         LCD.setCursor(11, 0);
-        if ( hState == H_ON_INCR || hState == H_ON_DECR )
+        if ( hState == H_ON )
             LCD << F("ON ");
         else
             LCD << F("OFF");
@@ -165,13 +157,12 @@ void loop(void)
         LCD << t / 10 << '.' << t % 10 << '\xDF' << F("F ");
         if ( hState == H_STALE || hState == H_IDLE )
             LCD << '?';
-        else if ( hState == H_OFF )
-            LCD << ' ';
-        else if ( hState == H_ON_INCR )
-            LCD << '\x00';
-        else if ( hState == H_ON_DECR || H_OFF_DECR )
-            LCD << '\x01';
         LCD << F("  ");
+
+        //print to Serial too
+        Serial << millis() << '\t';
+        XB.printDateTime(LOCAL);
+        Serial << '\t' << t << '\t' << stale << '\t' << hState << endl;
     }
 
     //update saved values
