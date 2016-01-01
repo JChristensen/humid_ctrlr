@@ -14,7 +14,6 @@ xb::xb()
 bool xb::begin(Stream &serial, bool resetXBee)
 {
     gsXBee::begin(serial, resetXBee);
-    //setSyncCallback(processTimeSync);
 }
 
 //returns true when data received

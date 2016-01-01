@@ -1,22 +1,21 @@
+//XBee with time sync
+
 #ifndef _xb_H
 #define _xb_H
-#include <gsXBee.h>                    //http://github.com/JChristensen/gsXBee
-#include <Streaming.h>                 //http://arduiniana.org/libraries/streaming/
-#include <Time.h>                      //http://www.arduino.cc/playground/Code/Time
-#include <Timezone.h>                  //http://github.com/JChristensen/Timezone
+#include <gsXBee.h>                         //http://github.com/JChristensen/gsXBee
+#include <Streaming.h>                      //http://arduiniana.org/libraries/streaming/
+#include <Time.h>                           //http://www.arduino.cc/playground/Code/Time
+#include <Timezone.h>                       //http://github.com/JChristensen/Timezone
 
-const uint32_t LATE_DATA_MS(31000);       //data considered stale if not received for this long
-const uint32_t XB_ACK_TIMEOUT(3000);      //ms
-const int _SYNC_MINUTE(58);               //the minute in which the hourly time sync is done
-const time_t _SYNC_INTERVAL(60*60);       //normal time sync interval
-const time_t _SYNC_RETRY_INTERVAL(5*60);  //interval to retry time sync if not received
+const uint32_t LATE_DATA_MS(31000);         //data considered stale if not received for this long
+const uint32_t XB_ACK_TIMEOUT(3000);        //ms
+const int _SYNC_MINUTE(58);                 //the minute in which the hourly time sync is done
+const time_t _SYNC_INTERVAL(60*60);         //normal time sync interval
+const time_t _SYNC_RETRY_INTERVAL(5*60);    //interval to retry time sync if not received
 
 enum xbeeStates_t { xb_WAIT, xb_REQ_TIMESYNC, xb_WAIT_ACK };
 enum timeTypes_t { UTC, LOCAL };
 
-/*----------------------------------------------------------------------*
- * xb class                                                             *
- *----------------------------------------------------------------------*/
 class xb : public gsXBee
 {
 public:

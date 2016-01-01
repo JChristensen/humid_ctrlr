@@ -14,7 +14,8 @@
 #include "classes.h"
 #include "xbee.h"
 
-const uint8_t               //pin assignments
+//pin assignments
+const uint8_t
 //  RXD(0),
 //  TXD(1),
     RELAY(7),
@@ -27,14 +28,13 @@ const uint8_t               //pin assignments
 
 //other constants
 const uint32_t RESET_DELAY(10000);
+const uint32_t SYNC_TIMEOUT(10000);         //wait 10 sec for time sync response, then retry
 
 //object instantiations
 HumidifierController Humidifier(RELAY, HUMID_ON_LED, DATA_STALE_LED);
 xb XB;
 LiquidTWI LCD(0); //i2c address 0 (0x20)
 heartbeat hbLED(HB_LED, 1000);
-
-//global variables
 
 void circuitTest()
 {
@@ -80,7 +80,6 @@ void setup(void)
     uint8_t dnArrow[8] = { B00100, B00100, B00100, B00100, B10101, B01110, B00100 };
 
     INIT_STATES_t INIT_STATE = INIT_HARDWARE;
-    const uint32_t SYNC_TIMEOUT(10000);         //wait 10 sec for time sync response, then retry
 
     while ( INIT_STATE != INIT_COMPLETE )
     {
