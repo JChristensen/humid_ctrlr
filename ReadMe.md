@@ -17,7 +17,7 @@ This is probably an interim solution; I would prefer a single unit with the temp
 - The "Stale Data" state ensures the humidifier is shut off if data is not received from the sensor node. All other states include a check for stale data. In the initial implementation, data is sent every 10 seconds, and a stale data condition occurs if more than 30 seconds elapse without receipt of data.
 - T-HI represents the plenum temperature at which the blower turns off at the end of a heating cycle. Through observation, this occurs between about 95°F and 100°F.
 - T-LO represents a temperature that the plenum will usually fall below between heating cycles. When the temperature increases above this level, we conclude that the burner and fan are on.
-- Note that in situations where the furnace is making up a larger temperature difference, the plenum temperature may not fall below T-LO. The transition between the 5.OFF (temp. decreasing) state and the 3.ON (temp. increasing) state is to respond to this condition.
+- Note that in situations where the furnace is making up a large temperature difference, the plenum temperature may not fall below T-LO. The transition between the 5.OFF (temp. decreasing) state and the 3.ON (temp. increasing) state is to respond to this condition.
 - The initial implementation uses T-LO = 80°F and T-HI = 95°F.
 
 ### Revision History ###

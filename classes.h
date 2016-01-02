@@ -105,7 +105,7 @@ ctrlrStates_t HumidifierController::run(int temperature, bool dataStale)
         {
             _CTL_STATE = H_STALE;
         }
-        else if ( temperature <= T_LOW )
+        else if ( temperature < T_LOW )
         {
             _CTL_STATE = H_OFF;
         }
