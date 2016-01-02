@@ -11,7 +11,7 @@ My solution is to sense the temperature in the plenum to determine when the burn
 
 This is probably an interim solution; I would prefer a single unit with the temperature sensor directly connected but this was the quickest implementation for a couple of reasons. The final design will also have an XBee so that data can be logged to an online service (I use [GroveStreams](https://grovestreams.com/)).
 
-### State Transition Diagram - Notes###
+### [State Transition Diagram](https://raw.githubusercontent.com/JChristensen/humid_ctrlr/master/state_transition_diagram.png) - Notes###
 
 - The state machine determines whether the temperature is increasing or decreasing simply by comparing the temperature on the last trip through the machine to the current temperature.
 - The "Stale Data" state ensures the humidifier is shut off if data is not received from the sensor node. All other states include a check for stale data. In the initial implementation, data is sent every 10 seconds, and a stale data condition occurs if more than 30 seconds elapse without receipt of data.
