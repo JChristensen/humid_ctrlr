@@ -13,7 +13,7 @@ xb::xb()
 //initialize the XBee
 bool xb::begin(Stream &serial, bool resetXBee)
 {
-    gsXBee::begin(serial, resetXBee);
+    return gsXBee::begin(serial, resetXBee);
 }
 
 //returns true when data received
