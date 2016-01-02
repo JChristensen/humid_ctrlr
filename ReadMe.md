@@ -1,5 +1,5 @@
 # Humidifier Controller #
-http://github.com/JChristensen/humid_ctrlr
+http://github.com/JChristensen/humid_ctrlr  
 ReadMe file  
 Jack Christensen Jan 2016  
 
@@ -14,5 +14,8 @@ This is probably an interim solution; I would prefer a single unit with the temp
 ### Revision History ###
 
 **Jan 2016** -- Initial implementation.
+### Acknowledgements ###
+Many thanks to Tom H. (a.k.a. Ducky) for providing hardware that made for a rapid and robust implementation: MCU/XBee board, Relay board, LCD I2C backpack.
+
 ### CC BY-SA ###
 Humidifier Controller by Jack Christensen is licensed under CC BY-SA 4.0, http://creativecommons.org/licenses/by-sa/4.0/

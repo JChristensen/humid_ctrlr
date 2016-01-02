@@ -1,5 +1,5 @@
 # Humidifier Controller #
-http://github.com/JChristensen/humid_ctrlr
+http://github.com/JChristensen/humid_ctrlr  
 LICENSE file  
 Jack Christensen Jan 2016  
 
